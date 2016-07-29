@@ -23,25 +23,21 @@ clc;        % clear the command window
 %% General settings (provided, no need to change)
 addpath('lib')  % add reference path to functions in the library
 addpath('dataset_1') % add path so that MATLAB knows where to find the data
-addpath('dataset_2') % add path so that MATLAB knows where to find the data
+% addpath('dataset_2') % add path so that MATLAB knows where to find the data
 
 % "settings" is a structure variable, containing many sub-fields
-settings.path = 'dataset_2';     % specify the path to the data
-settings.subSample = 0.5;   % downsample the data by 20% to speed up
+settings.path = 'dataset_1';     % specify the path to the data
+settings.subSample = 1;   % downsample the data by 20% to speed up
 settings.min_depth = 500;   % minimum valid distance in milimeters
 settings.max_depth = 4500;   % maximum valid distance in milimeters
 
 %% User settings (feel free to make any change)
 doShow = true;
 
-%% Loading the first point cloud
-[ depth, rgb, odom ] = load_and_process_data( settings, 1 );
-ptCloud = depth2pc(depth, rgb, odom, settings);
-
 %% Load data
 % "load_and_process_data" is a function provided in the library to load
 % data of particular format
-[ depth, rgb, odom ] = load_and_process_data( settings, 10 );
+[ depth, rgb, odom ] = load_and_process_data( settings, 500 );
 
 % "depth2pc" is a function provided in the library to convert a depth image
 % to a point cloud
@@ -50,7 +46,7 @@ ptCloud = depth2pc(depth, rgb, odom, settings);
 %% Visualize 3d point cloud
 if doShow
     figure; 
-    markersize = 50;
+    markersize = 1;
     pcshow(ptCloud, 'MarkerSize', markersize); 
-    title('Point Cloud');
+    title('Yikai');
 end
