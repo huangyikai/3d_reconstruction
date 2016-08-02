@@ -3,18 +3,23 @@
 %   N = 4: number of nodes
 %   X, Y: coordinates
 %   Dist: N-by-N distance matrix
+%% TODO
+%   1. Add more nodes
+%   2. Add noise to DIST matrix
+%   3. Optional: change noise of the nodes from Gaussian noise to
+%   accumulated odometry noise
 
 close all; clear; clc
 
 %% Create nodes
-N = 4;
+N = 4;  % number of nodes
 Pos = [0, 0; ...
        10, 20; ...
        20, 10; ...
        0, 0];
 
 %% Create distance matrix
-DIST = zeros(N);
+DIST = zeros(N);    % N-by-N matrix, each entry representing one distance
 for i = 1 : N
     for j = i+1 : N
         if i == j
@@ -29,7 +34,9 @@ for i = 1 : N
 end
 
 %% Add noise
-Pos_noisy = Pos + 2 * randn(4, 2);
+% TODO: add odometry
+% refer to the command 'cumsum'
+Pos_noisy = Pos + 5 * randn(N, 2);
 
 %% Minimization
 % load the error function script
