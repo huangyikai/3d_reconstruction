@@ -26,12 +26,12 @@ settings.max_depth = 4500;   % maximum valid distance in milimeters
 
 %% User settings (feel free to make any change)
 doShowData = false;
-doSURF = true;
-do3DStitching = false;
+doSURF = false;
+do3DStitching = true;
 
 %% Loading the data
-[ depth_a, rgb_a, odom_a ] = load_and_process_data( settings, 100 );
-[ depth_b, rgb_b, odom_b ] = load_and_process_data( settings, 110 );
+[ depth_a, rgb_a, odom_a ] = load_and_process_data( settings, 20 );
+[ depth_b, rgb_b, odom_b ] = load_and_process_data( settings, 30 );
 
 %% SURF feature detection
 if doSURF
@@ -95,3 +95,39 @@ if do3DStitching
     zlabel('Z (m)')
     drawnow
 end
+accumTform = tform;
+
+figure 
+hAxes = pcshow(ptCloudScene, 'VerticalAxis', 'Y', 'VerticalAxisDir','Down');
+title('Updated world scene')
+hAxes.CameraViewAngleMode ='auto';
+hScatter = hAxes. Children;
+
+for i = 40 :5 : 200
+   
+    [depth_c, rgb_c, odom_c ] = load_and_process_data( settings, i );
+    ptCloudCurrent = depth2pc(depth_c, rgb_c, odom_c, settings);
+    ptCloud_a= ptCloud_b;
+    gridSize = 0.1;
+    ptCloud_b = pcdownsample(ptCloudCurrent,'gridAverage', gridSize);
+    tform = pcregrigid(ptCloud_a, ptCloud_b, 'Metric', 'pointToPlane', 'Extrapolate', true);
+    accumTform = affine3d(accumTform.T* tform.T);
+    ptCloudAligned = pctransform (ptCloudCurrent, accumTform);
+    ptCloudScene = pcmerge(ptCloudScene, ptCloudAligned, mergeSize);
+    
+end
+    hScatter.XData = ptCloudScene.Location(:,1);
+    hScatter.YData = ptCloudScene.Location(:,2);
+    hScatter.ZData = ptCloudScene.Location(:,3);
+    hScatter.CData = ptCloudScene.Color;
+    drawnow('limitrate')
+
+
+
+
+
+
+
+
+
+
