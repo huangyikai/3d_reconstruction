@@ -38,8 +38,8 @@ settings1.max_depth = 4500;   % maximum valid distance in milimeters
 
 %% User settings (feel free to make any change)
 doShow = true;
-%%
-for c = 2:500
+N = 100; % how many point cloud you want to add
+
 %% Load data
 % "load_and_process_data" is a function provided in the library to load
 % data of particular format
@@ -48,11 +48,15 @@ for c = 2:500
 % to a point cloud
   ptCloud1 = depth2pc(depth, rgb, odom, settings1);
 %Another ptcloud
-  [ depth, rgb, odom ] = load_and_process_data( settings1, c );
+  [ depth, rgb, odom ] = load_and_process_data( settings1, 2);
   ptCloud2 = depth2pc(depth, rgb, odom, settings1);
 % merging tow ptcloud
     ptCloud1 = pcmerge(ptCloud1, ptCloud2, 2) ;
-   c = c+1;
+%% loop for others 
+for c = 3: 2 : N;
+    [ depth, rgb, odom ] = load_and_process_data( settings1, c);
+    ptCloudloop =depth2pc(depth, rgb, odom, settings1) ;
+    ptCloud1 = pcmerge(ptCloud1, ptCloudloop, 2);
 end
 %% Visualize 3d point cloud
 if doShow
