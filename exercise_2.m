@@ -25,10 +25,11 @@ settings.min_depth = 500;   % minimum valid distance in milimeters
 settings.max_depth = 4500;   % maximum valid distance in milimeters
 
 %% User settings (feel free to make any change)
-doShowData = false;
-doSURF = false;
+doShowData = true;
+doSURF = true;
 do3DStitching = true;
-
+showthefirsttwo = true;
+domergeall = true;
 %% Loading the data
 [ depth_a, rgb_a, odom_a ] = load_and_process_data( settings, 20 );
 [ depth_b, rgb_b, odom_b ] = load_and_process_data( settings, 30 );
@@ -75,53 +76,56 @@ if do3DStitching
     ptCloudScene = pcmerge(ptCloud_a, ptCloudAligned, mergeSize);
 
     % visualizaiton
-    figure
-    subplot(2,2,1)
-    imshow(rgb_a)
-    title('First input image')
-    drawnow
+    if showthefirsttwo
+        figure
+        subplot(2,2,1)
+        imshow(rgb_a)
+        title('First input image')
+        drawnow
 
-    subplot(2,2,3)
-    imshow(rgb_b)
-    title('Second input image')
-    drawnow
+        subplot(2,2,3)
+        imshow(rgb_b)
+        title('Second input image')
+        drawnow
 
-    % Visualize the world scene.
-    subplot(2,2,[2,4])
-    pcshow(ptCloudScene, 'VerticalAxis','Y', 'VerticalAxisDir', 'Down')
-    title('Initial world scene')
-    xlabel('X (m)')
-    ylabel('Y (m)')
-    zlabel('Z (m)')
-    drawnow
+        % Visualize the world scene.
+        subplot(2,2,[2,4])
+        pcshow(ptCloudScene, 'VerticalAxis','Y', 'VerticalAxisDir', 'Down')
+        title('Initial world scene')
+        xlabel('X (m)')
+        ylabel('Y (m)')
+        zlabel('Z (m)')
+        drawnow
+    end
 end
-accumTform = tform;
+if domergeall
+    accumTform = tform;
 
-figure 
-hAxes = pcshow(ptCloudScene, 'VerticalAxis', 'Y', 'VerticalAxisDir','Down');
-title('Updated world scene')
-hAxes.CameraViewAngleMode ='auto';
-hScatter = hAxes. Children;
+    figure 
+    hAxes = pcshow(ptCloudScene, 'VerticalAxis', 'Y', 'VerticalAxisDir','Down');
+    title('Updated world scene')
+    hAxes.CameraViewAngleMode ='auto';
+    hScatter = hAxes. Children;
 
-for i = 40 :5 : 200
-   
-    [depth_c, rgb_c, odom_c ] = load_and_process_data( settings, i );
-    ptCloudCurrent = depth2pc(depth_c, rgb_c, odom_c, settings);
-    ptCloud_a= ptCloud_b;
-    gridSize = 0.1;
-    ptCloud_b = pcdownsample(ptCloudCurrent,'gridAverage', gridSize);
-    tform = pcregrigid(ptCloud_a, ptCloud_b, 'Metric', 'pointToPlane', 'Extrapolate', true);
-    accumTform = affine3d(accumTform.T* tform.T);
-    ptCloudAligned = pctransform (ptCloudCurrent, accumTform);
-    ptCloudScene = pcmerge(ptCloudScene, ptCloudAligned, mergeSize);
-    
+    for i = 40 :5 : 200
+
+        [depth_c, rgb_c, odom_c ] = load_and_process_data( settings, i );
+        ptCloudCurrent = depth2pc(depth_c, rgb_c, odom_c, settings);
+        ptCloud_a= ptCloud_b;
+        gridSize = 0.1;
+        ptCloud_b = pcdownsample(ptCloudCurrent,'gridAverage', gridSize);
+        tform = pcregrigid(ptCloud_a, ptCloud_b, 'Metric', 'pointToPlane', 'Extrapolate', true);
+        accumTform = affine3d(accumTform.T* tform.T);
+        ptCloudAligned = pctransform (ptCloudCurrent, accumTform);
+        ptCloudScene = pcmerge(ptCloudScene, ptCloudAligned, mergeSize);
+
+    end
+        hScatter.XData = ptCloudScene.Location(:,1);
+        hScatter.YData = ptCloudScene.Location(:,2);
+        hScatter.ZData = ptCloudScene.Location(:,3);
+        hScatter.CData = ptCloudScene.Color;
+        drawnow('limitrate')
 end
-    hScatter.XData = ptCloudScene.Location(:,1);
-    hScatter.YData = ptCloudScene.Location(:,2);
-    hScatter.ZData = ptCloudScene.Location(:,3);
-    hScatter.CData = ptCloudScene.Color;
-    drawnow('limitrate')
-
 
 
 

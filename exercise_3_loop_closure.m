@@ -12,11 +12,13 @@
 close all; clear; clc
 
 %% Create nodes
-N = 4;  % number of nodes
+N = 6;  % number of nodes
 Pos = [0, 0; ...
        10, 20; ...
        20, 10; ...
-       0, 0];
+       27, 5; ...
+       10, 10;...
+       0,0];
 
 %% Create distance matrix
 DIST = zeros(N);    % N-by-N matrix, each entry representing one distance
@@ -27,7 +29,7 @@ for i = 1 : N
         else
             delta_x = Pos(i, 1) - Pos(j, 1);
             delta_y = Pos(i, 2) - Pos(j, 2);
-            DIST(i, j) = norm([delta_x, delta_y], 2);
+            DIST(i, j) = randn +norm([delta_x, delta_y], 2);
             DIST(j, i) = DIST(i, j);
         end
     end
@@ -36,7 +38,7 @@ end
 %% Add noise
 % TODO: add odometry
 % refer to the command 'cumsum'
-Pos_noisy = Pos + 5 * randn(N, 2);
+Pos_noisy = Pos + cumsum (randn(N, 2));
 
 %% Minimization
 % load the error function script
@@ -46,7 +48,7 @@ options = optimoptions('fminunc','Algorithm','quasi-newton');
 
 % Call fminunc, an unconstrained nonlinear minimizer:
 [Pos_optimized, fval, exitflag, output] = fminunc(fun, Pos_noisy, options);
-Pos_optimized
+Pos_optimized;
 
 %% Visualization
 figure; 
